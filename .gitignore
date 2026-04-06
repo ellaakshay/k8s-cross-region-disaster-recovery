@@ -1,0 +1,26 @@
+# AWS Credentials — NEVER commit
+credentials-velero
+*.csv
+
+# SSH Keys
+*.pem
+*.ppk
+*.key
+
+# Kubeconfigs
+primary-kubeconfig
+standby-kubeconfig
+kubeconfig
+
+# Environment
+.env
+.env.*
+
+# Logs
+rto-report.log
+
+# OS / Editor
+.DS_Store
+*.swp
+.idea/
+.vscode/

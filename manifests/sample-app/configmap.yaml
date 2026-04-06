@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: app-config
+  namespace: test-app
+data:
+  env: production
+  region: us-east-1
+  backup-enabled: 'true'
+  velero-schedule: full-cluster-backup

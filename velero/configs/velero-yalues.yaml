@@ -1,0 +1,35 @@
+# ---------------------------------------------------------------------------------------
+# Velero Helm Configuration (velero-yalues.yaml)
+# ---------------------------------------------------------------------------------------
+
+configuration:
+  provider: aws
+  backupStorageLocation:
+    name: aws
+    bucket: velero-backup-primary
+    config:
+      region: us-east-1
+  volumeSnapshotLocation:
+    name: aws
+    config:
+      region: us-east-1
+
+# CRD Settings
+initContainers:
+  - name: velero-plugin-for-aws
+    image: velero/velero-plugin-for-aws:v1.9.0
+    volumeMounts:
+      - mountPath: /target
+        name: plugins
+
+# Use local backup credentials
+credentials:
+  secretContents:
+    cloud: |
+      [default]
+      aws_access_key_id = <YOUR_ACCESS_KEY_ID>
+      aws_secret_access_key = <YOUR_SECRET_ACCESS_KEY>
+
+# Enable CSI support
+features: EnableCSI
+deployNodeAgent: true

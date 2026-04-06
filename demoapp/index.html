@@ -1,0 +1,929 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VeleroShield — Disaster Recovery Platform</title>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;600;700;800&display=swap"
+    rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #060810;
+      --surface: #0c1120;
+      --border: #1a2540;
+      --accent: #00d4ff;
+      --accent2: #00ff9d;
+      --warn: #ff4d6d;
+      --text: #e8edf8;
+      --muted: #6b7a99;
+      --card: #0f1828;
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Syne', sans-serif;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: linear-gradient(rgba(0, 212, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 212, 255, 0.03) 1px, transparent 1px);
+      background-size: 48px 48px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(100px);
+      pointer-events: none;
+      z-index: 0;
+      opacity: 0.12;
+      animation: orbFloat 12s ease-in-out infinite;
+    }
+
+    .orb1 {
+      width: 500px;
+      height: 500px;
+      background: var(--accent);
+      top: -200px;
+      left: -100px;
+    }
+
+    .orb2 {
+      width: 400px;
+      height: 400px;
+      background: var(--accent2);
+      bottom: -150px;
+      right: -100px;
+      animation-delay: -6s;
+    }
+
+    @keyframes orbFloat {
+
+      0%,
+      100% {
+        transform: translate(0, 0)
+      }
+
+      50% {
+        transform: translate(30px, -40px)
+      }
+    }
+
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 48px;
+      background: rgba(6, 8, 16, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: 'Space Mono', monospace;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .nav-logo::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      background: var(--accent2);
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1)
+      }
+
+      50% {
+        opacity: 0.7;
+        transform: scale(1.4)
+      }
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+    }
+
+    .nav-links a {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+      text-decoration: none;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--accent);
+    }
+
+    .status-bar {
+      position: fixed;
+      top: 68px;
+      left: 0;
+      right: 0;
+      z-index: 99;
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      padding: 9px;
+      background: rgba(0, 212, 255, 0.05);
+      border-bottom: 1px solid rgba(0, 212, 255, 0.15);
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      letter-spacing: 1px;
+    }
+
+    .status-item {
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+    }
+
+    .dot.green {
+      background: var(--accent2);
+      animation: pulse 2s infinite;
+    }
+
+    .dot.blue {
+      background: var(--accent);
+      animation: pulse 2s 0.5s infinite;
+    }
+
+    .hero {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 160px 60px 80px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .hero-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(0, 212, 255, 0.08);
+      border: 1px solid rgba(0, 212, 255, 0.25);
+      border-radius: 2px;
+      padding: 6px 14px;
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.2s;
+    }
+
+    h1 {
+      font-size: clamp(48px, 8vw, 96px);
+      font-weight: 800;
+      line-height: 0.95;
+      letter-spacing: -3px;
+      margin-bottom: 24px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.4s;
+    }
+
+    .line1 {
+      display: block;
+      color: var(--text);
+    }
+
+    .line2 {
+      display: block;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-desc {
+      max-width: 520px;
+      font-size: 17px;
+      line-height: 1.75;
+      color: var(--muted);
+      margin-bottom: 40px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.6s;
+    }
+
+    .hero-actions {
+      display: flex;
+      gap: 14px;
+      opacity: 0;
+      animation: fadeUp 0.8s ease forwards 0.8s;
+    }
+
+    .btn-p {
+      padding: 13px 30px;
+      background: var(--accent);
+      color: #000;
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      border: none;
+      border-radius: 2px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .btn-p:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 212, 255, 0.4);
+    }
+
+    .btn-s {
+      padding: 13px 30px;
+      background: transparent;
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s;
+    }
+
+    .btn-s:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    .metrics {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: var(--border);
+    }
+
+    .metric {
+      background: var(--surface);
+      padding: 36px 24px;
+      text-align: center;
+    }
+
+    .metric-val {
+      font-family: 'Space Mono', monospace;
+      font-size: 44px;
+      font-weight: 700;
+      color: var(--accent2);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .metric-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--muted);
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+
+    .section {
+      position: relative;
+      z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 90px 60px;
+    }
+
+    .sec-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+      color: var(--accent);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+
+    .sec-title {
+      font-size: clamp(32px, 5vw, 52px);
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1.05;
+      margin-bottom: 16px;
+    }
+
+    .sec-sub {
+      font-size: 16px;
+      color: var(--muted);
+      line-height: 1.75;
+      max-width: 520px;
+      margin-bottom: 56px;
+    }
+
+    .flow-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--border);
+      border: 1px solid var(--border);
+    }
+
+    .flow-card {
+      background: var(--card);
+      padding: 36px 28px;
+      position: relative;
+      overflow: hidden;
+      transition: background 0.2s;
+    }
+
+    .flow-card:hover {
+      background: #121e34;
+    }
+
+    .flow-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform 0.3s;
+    }
+
+    .flow-card:hover::before {
+      transform: scaleX(1);
+    }
+
+    .flow-num {
+      font-family: 'Space Mono', monospace;
+      font-size: 44px;
+      font-weight: 700;
+      color: var(--border);
+      line-height: 1;
+      margin-bottom: 14px;
+    }
+
+    .flow-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .flow-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.7;
+    }
+
+    .flow-tag {
+      display: inline-block;
+      margin-top: 14px;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--accent);
+      background: rgba(0, 212, 255, 0.08);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      padding: 3px 10px;
+      border-radius: 2px;
+      letter-spacing: 1px;
+    }
+
+    .tech-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-top: 40px;
+    }
+
+    .tech-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 2px;
+      padding: 24px 20px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .tech-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+    }
+
+    .tech-icon {
+      font-family: 'Space Mono', monospace;
+      font-size: 22px;
+      color: var(--accent);
+      margin-bottom: 10px;
+    }
+
+    .tech-name {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .tech-ver {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--accent2);
+      margin-bottom: 7px;
+    }
+
+    .tech-desc {
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .region-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      margin-top: 40px;
+    }
+
+    .region-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 28px;
+    }
+
+    .region-card.active {
+      border-color: rgba(0, 255, 157, 0.4);
+    }
+
+    .region-card.standby {
+      border-color: rgba(0, 212, 255, 0.3);
+    }
+
+    .region-badge {
+      display: inline-block;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 2px;
+      padding: 4px 10px;
+      border-radius: 2px;
+      margin-bottom: 16px;
+    }
+
+    .badge-a {
+      background: rgba(0, 255, 157, 0.15);
+      color: var(--accent2);
+      border: 1px solid rgba(0, 255, 157, 0.3);
+    }
+
+    .badge-s {
+      background: rgba(0, 212, 255, 0.1);
+      color: var(--accent);
+      border: 1px solid rgba(0, 212, 255, 0.2);
+    }
+
+    .badge-b {
+      background: rgba(107, 122, 153, 0.15);
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .region-name {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .region-loc {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      margin-bottom: 16px;
+    }
+
+    .specs {
+      list-style: none;
+    }
+
+    .specs li {
+      display: flex;
+      justify-content: space-between;
+      padding: 7px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+    }
+
+    .specs li:last-child {
+      border-bottom: none;
+    }
+
+    .sk {
+      color: var(--muted);
+    }
+
+    .sv {
+      color: var(--text);
+      font-family: 'Space Mono', monospace;
+      font-size: 11px;
+    }
+
+    .result-box {
+      position: relative;
+      z-index: 1;
+      background: linear-gradient(135deg, rgba(0, 212, 255, 0.05), rgba(0, 255, 157, 0.05));
+      border: 1px solid rgba(0, 212, 255, 0.2);
+      border-radius: 4px;
+      padding: 72px 60px;
+      text-align: center;
+      overflow: hidden;
+      margin: 0 60px 90px;
+    }
+
+    .result-unit {
+      font-family: 'Space Mono', monospace;
+      font-size: 12px;
+      color: var(--muted);
+      letter-spacing: 4px;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+
+    .result-rto {
+      font-family: 'Space Mono', monospace;
+      font-size: clamp(80px, 14vw, 150px);
+      font-weight: 700;
+      line-height: 1;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .result-caption {
+      font-size: 17px;
+      color: var(--text);
+      font-weight: 600;
+      margin-top: 16px;
+    }
+
+    .result-sub {
+      font-size: 13px;
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--border);
+      max-width: 1100px;
+      margin: 0 auto;
+      position: relative;
+      z-index: 1;
+    }
+
+    footer {
+      position: relative;
+      z-index: 1;
+      border-top: 1px solid var(--border);
+      padding: 36px 60px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .footer-logo {
+      font-family: 'Space Mono', monospace;
+      font-size: 15px;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .footer-info {
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      color: var(--muted);
+      text-align: right;
+      line-height: 1.9;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s ease, transform 0.7s ease;
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(24px)
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0)
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <nav>
+    <div class="nav-logo">VeleroShield</div>
+    <div class="nav-links">
+      <a href="#how">How It Works</a>
+      <a href="#stack">Stack</a>
+      <a href="#regions">Regions</a>
+      <a href="#results">Results</a>
+    </div>
+  </nav>
+  <div class="status-bar">
+    <div class="status-item">
+      <div class="dot green"></div><span>PRIMARY · us-east-1 · ONLINE</span>
+    </div>
+    <div class="status-item">
+      <div class="dot blue"></div><span>FAILOVER · us-west-2 · STANDBY</span>
+    </div>
+    <div class="status-item">
+      <div class="dot green"></div><span>S3 CRR · REPLICATING</span>
+    </div>
+    <div class="status-item">
+      <div class="dot green"></div><span>VELERO · DAILY 02:00 UTC</span>
+    </div>
+  </div>
+  <section class="hero">
+    <div class="hero-tag">Project #45 — Advanced Level</div>
+    <h1><span class="line1">Cross-Region</span><span class="line2">Disaster Recovery</span></h1>
+    <p class="hero-desc">A production-grade Kubernetes DR pipeline using Velero, AWS S3 Cross-Region Replication, and
+      automated restore testing — proven RTO of 13 seconds.</p>
+    <div class="hero-actions">
+      <a href="#results" class="btn-p">SEE RESULTS</a>
+      <a href="#how" class="btn-s">HOW IT WORKS</a>
+    </div>
+  </section>
+  <div class="metrics">
+    <div class="metric">
+      <div class="metric-val" id="m1">13s</div>
+      <div class="metric-label">Measured RTO</div>
+    </div>
+    <div class="metric">
+      <div class="metric-val" id="m2">335</div>
+      <div class="metric-label">K8s Items Backed Up</div>
+    </div>
+    <div class="metric">
+      <div class="metric-val" id="m3">3</div>
+      <div class="metric-label">AWS Regions</div>
+    </div>
+    <div class="metric">
+      <div class="metric-val" id="m4">0</div>
+      <div class="metric-label">Backup Errors</div>
+    </div>
+  </div>
+  <section class="section" id="how">
+    <div class="sec-label">Process</div>
+    <h2 class="sec-title reveal">How It Works</h2>
+    <p class="sec-sub reveal">Seven phases from zero infrastructure to a fully automated disaster recovery system with
+      auto-failover.</p>
+    <div class="flow-grid reveal">
+      <div class="flow-card">
+        <div class="flow-num">01</div>
+        <div class="flow-title">Build the Clusters</div>
+        <div class="flow-desc">Two EC2 instances launched via AWS CLI. Kubeadm initializes K8s on each. Flannel provides
+          pod networking across both regions.</div><span class="flow-tag">KUBEADM + EC2</span>
+      </div>
+      <div class="flow-card">
+        <div class="flow-num">02</div>
+        <div class="flow-title">S3 + CRR Setup</div>
+        <div class="flow-desc">Primary S3 bucket in us-east-1 with versioning. Replica in us-west-2. Cross-Region
+          Replication copies every object automatically within seconds.</div><span class="flow-tag">S3 + IAM</span>
+      </div>
+      <div class="flow-card">
+        <div class="flow-num">03</div>
+        <div class="flow-title">Install Velero</div>
+        <div class="flow-desc">Velero v1.13.2 installed on both clusters. Primary writes backups. Standby reads replica
+          in ReadOnly mode. IAM least-privilege enforced.</div><span class="flow-tag">VELERO v1.13.2</span>
+      </div>
+      <div class="flow-card">
+        <div class="flow-num">04</div>
+        <div class="flow-title">Schedule Backups</div>
+        <div class="flow-desc">Velero Schedule CR triggers full cluster backup every 24h at 02:00 UTC. All namespaces,
+          resources, PVC snapshots. 7-day retention.</div><span class="flow-tag">CRON + VELERO</span>
+      </div>
+      <div class="flow-card">
+        <div class="flow-num">05</div>
+        <div class="flow-title">Deploy Website</div>
+        <div class="flow-desc">Nginx serves this HTML page as a K8s Deployment on BOTH clusters. NodePort exposes port
+          80. Same site runs in both regions simultaneously.</div><span class="flow-tag">NGINX + K8S</span>
+      </div>
+      <div class="flow-card">
+        <div class="flow-num">06</div>
+        <div class="flow-title">Route53 Failover</div>
+        <div class="flow-desc">Health check pings primary every 30s. If 3 checks fail, DNS auto-switches to failover
+          region. Zero manual intervention required.</div><span class="flow-tag">ROUTE53</span>
+      </div>
+      <div class="flow-card">
+        <div class="flow-num">07</div>
+        <div class="flow-title">Measure RTO</div>
+        <div class="flow-desc">restore-test.sh runs weekly via cron. Deletes namespace, triggers Velero restore, polls
+          until complete, logs exact time taken.</div><span class="flow-tag">BASH + CRON</span>
+      </div>
+      <div class="flow-card">
+        <div class="flow-num">08</div>
+        <div class="flow-title">Auto Recovery</div>
+        <div class="flow-desc">Primary goes down → Route53 switches DNS → Failover serves website → Velero restores
+          latest backup → Full DR complete.</div><span class="flow-tag">FULL DR</span>
+      </div>
+      <div class="flow-card">
+        <div class="flow-num">09</div>
+        <div class="flow-title">Weekly Drill</div>
+        <div class="flow-desc">Automated restore drills every Monday generate RTO reports. Proves the system works
+          before a real disaster ever hits.</div><span class="flow-tag">AUTOMATION</span>
+      </div>
+    </div>
+  </section>
+  <div class="divider"></div>
+  <section class="section" id="stack">
+    <div class="sec-label">Technology</div>
+    <h2 class="sec-title reveal">Stack</h2>
+    <p class="sec-sub reveal">Every tool chosen for a specific purpose. Nothing unnecessary.</p>
+    <div class="tech-grid reveal">
+      <div class="tech-card">
+        <div class="tech-icon">[V]</div>
+        <div class="tech-name">Velero</div>
+        <div class="tech-ver">v1.13.2</div>
+        <div class="tech-desc">K8s backup and restore engine. Serialises all resources to S3 and triggers EBS snapshots
+          for PVCs.</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">[K]</div>
+        <div class="tech-name">Kubeadm</div>
+        <div class="tech-ver">v1.29.15</div>
+        <div class="tech-desc">Bootstraps production-grade K8s clusters on plain EC2 instances without any managed
+          service.</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">[S3]</div>
+        <div class="tech-name">AWS S3 + CRR</div>
+        <div class="tech-ver">Standard</div>
+        <div class="tech-desc">Primary and replica buckets with Cross-Region Replication. Backups survive full region
+          outage.</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">[EC2]</div>
+        <div class="tech-name">AWS EC2</div>
+        <div class="tech-ver">t3.small</div>
+        <div class="tech-desc">Runs K8s master+worker nodes. 2 vCPU, 2GB RAM — minimum viable for Kubeadm single-node.
+        </div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">[53]</div>
+        <div class="tech-name">Route53</div>
+        <div class="tech-ver">DNS Failover</div>
+        <div class="tech-desc">Health checks monitor primary every 30s. Auto-switches DNS to failover region on failure
+          detection.</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">[Nx]</div>
+        <div class="tech-name">Nginx</div>
+        <div class="tech-ver">Latest</div>
+        <div class="tech-desc">Serves the website on both clusters as a K8s Deployment exposed via NodePort service on
+          port 80.</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">[SH]</div>
+        <div class="tech-name">Bash Scripts</div>
+        <div class="tech-ver">v5+</div>
+        <div class="tech-desc">restore-test.sh orchestrates weekly DR drills and measures RTO via Unix timestamps.</div>
+      </div>
+      <div class="tech-card">
+        <div class="tech-icon">[IM]</div>
+        <div class="tech-name">AWS IAM</div>
+        <div class="tech-ver">Least-Priv</div>
+        <div class="tech-desc">VeleroPolicy grants only exact S3 and EBS permissions needed. No wildcard actions.</div>
+      </div>
+    </div>
+  </section>
+  <div class="divider"></div>
+  <section class="section" id="regions">
+    <div class="sec-label">Infrastructure</div>
+    <h2 class="sec-title reveal">Deployed Regions</h2>
+    <p class="sec-sub reveal">Three AWS regions. Each with a specific role in the DR pipeline.</p>
+    <div class="region-grid reveal">
+      <div class="region-card active">
+        <span class="region-badge badge-a">● ACTIVE</span>
+        <div class="region-name">Primary</div>
+        <div class="region-loc">us-east-1 · N. Virginia</div>
+        <ul class="specs">
+          <li><span class="sk">Instance ID</span><span class="sv">i-00f7655e0841cc4df</span></li>
+          <li><span class="sk">Public IP</span><span class="sv">34.227.158.2</span></li>
+          <li><span class="sk">Type</span><span class="sv">t3.small</span></li>
+          <li><span class="sk">K8s</span><span class="sv">v1.29.15</span></li>
+          <li><span class="sk">Website</span><span class="sv">LIVE ✓</span></li>
+          <li><span class="sk">S3</span><span class="sv">primary-992234856455</span></li>
+        </ul>
+      </div>
+      <div class="region-card standby">
+        <span class="region-badge badge-s">◎ FAILOVER</span>
+        <div class="region-name">Standby</div>
+        <div class="region-loc">us-west-2 · Oregon</div>
+        <ul class="specs">
+          <li><span class="sk">Instance ID</span><span class="sv">i-0c62245fc17802714</span></li>
+          <li><span class="sk">Public IP</span><span class="sv">35.91.69.250</span></li>
+          <li><span class="sk">Type</span><span class="sv">t3.small</span></li>
+          <li><span class="sk">K8s</span><span class="sv">v1.29.15</span></li>
+          <li><span class="sk">Website</span><span class="sv">READY ◎</span></li>
+          <li><span class="sk">S3</span><span class="sv">replica-992234856455</span></li>
+        </ul>
+      </div>
+      <div class="region-card">
+        <span class="region-badge badge-b">◈ CONTROL</span>
+        <div class="region-name">Bastion</div>
+        <div class="region-loc">ap-south-1 · Mumbai</div>
+        <ul class="specs">
+          <li><span class="sk">Type</span><span class="sv">t3.micro</span></li>
+          <li><span class="sk">OS</span><span class="sv">Ubuntu 22.04</span></li>
+          <li><span class="sk">AWS CLI</span><span class="sv">v2.34.22</span></li>
+          <li><span class="sk">kubectl</span><span class="sv">v1.35.3</span></li>
+          <li><span class="sk">Velero CLI</span><span class="sv">v1.13.2</span></li>
+          <li><span class="sk">Cron</span><span class="sv">Weekly DR drill</span></li>
+        </ul>
+      </div>
+    </div>
+  </section>
+  <div class="result-box" id="results">
+    <div class="result-unit">Measured Recovery Time Objective</div>
+    <div class="result-rto">13s</div>
+    <div class="result-caption">Full cross-region namespace restore — April 2, 2026</div>
+    <div class="result-sub">Target was under 30 minutes &nbsp;·&nbsp; Achieved 13 seconds &nbsp;·&nbsp; 99.3% faster
+      than target</div>
+  </div>
+  <footer>
+    <div class="footer-logo">VeleroShield DR</div>
+    <div class="footer-info">Project #45 · Advanced Level · Jayanth Miriyala<br />Executed April 2, 2026 · AWS Account
+      992234856455</div>
+  </footer>
+  <script>
+    const revealEls = document.querySelectorAll('.reveal');
+    const obs = new IntersectionObserver(entries => { entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); }); }, { threshold: 0.1 });
+    revealEls.forEach(el => obs.observe(el));
+  </script>
+</body>
+
+</html>

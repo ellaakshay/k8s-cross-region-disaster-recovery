@@ -1,0 +1,18 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: demo-pvc
+  namespace: test-app
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: ebs-sc
+  resources:
+    requests:
+      storage: 1Gi
+# Actual EBS Volume Created:
+#   Volume ID: vol-00ca89e1756413a34
+#   Type:      gp3
+#   Size:      1 GB
+#   AZ:        us-east-1b
+#   State:     in-use
