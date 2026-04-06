@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🛡️ Velero Disaster Recovery: Cross-Region K8s Backup & Restore
 
 [![Velero](https://img.shields.io/badge/Provider-Velero-blue?logo=velero&logoColor=white)](https://velero.io/)
@@ -91,3 +92,6 @@ The core metric for this POC is the **Recovery Time Objective (RTO)**—the time
 - **BackupStorageLocation Unavailable**: Verify IAM credentials and S3 network connectivity.
 - **EBS Snapshot Fails**: Ensure `ec2:CreateSnapshot` is present in the IAM policy.
 - **PVC Not Restored**: Ensure the `StorageClass` name on the standby cluster matches the primary cluster exactly.
+=======
+# k8s-cross-region-disaster-recovery
+>>>>>>> 13e7e297d58b1f1a5cb3acd9eaa662878710559b
